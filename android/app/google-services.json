@@ -1,0 +1,114 @@
+{
+  "project_info": {
+    "project_number": "763029742461",
+    "project_id": "lawyer-417809",
+    "storage_bucket": "lawyer-417809.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763029742461:android:dd91254478f889af1ce214",
+        "android_client_info": {
+          "package_name": "com.aapkelawyer.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763029742461-itajaq5k2a53v9o8ntbusb1di856a49f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aapkelawyer.app",
+            "certificate_hash": "39a28845ff2278519195fd77266bb0f71fc06ad2"
+          }
+        },
+        {
+          "client_id": "763029742461-tjvlfhkce64f4n9ga5v4rrcu9hk8k8se.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCO435hYLZhjSX__GESE3M6vdwT6-CS2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763029742461-tjvlfhkce64f4n9ga5v4rrcu9hk8k8se.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763029742461-7m78f6l3i4noigcn4isbc5987465rfvt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.aapkelawyer.app.in"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763029742461:android:4798f99311cf15171ce214",
+        "android_client_info": {
+          "package_name": "com.aapkelawyer.app.in"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "763029742461-eso1g0ioeuf58bb8qhiqc5becsqqmoj1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aapkelawyer.app.in",
+            "certificate_hash": "166c0d86cc86d8e293d285e65d37170cb6345070"
+          }
+        },
+        {
+          "client_id": "763029742461-sh2m47nbkapdvrur0nd3at2q8bdqs48u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aapkelawyer.app.in",
+            "certificate_hash": "1202c240aa7a381e1b90dce87de872dfd250acc6"
+          }
+        },
+        {
+          "client_id": "763029742461-vutdn5aahi2o1b481pnptfn3uko56t55.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aapkelawyer.app.in",
+            "certificate_hash": "4f916786157761808b3ca90650f79a74fa4c2c7a"
+          }
+        },
+        {
+          "client_id": "763029742461-tjvlfhkce64f4n9ga5v4rrcu9hk8k8se.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCO435hYLZhjSX__GESE3M6vdwT6-CS2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "763029742461-tjvlfhkce64f4n9ga5v4rrcu9hk8k8se.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "763029742461-7m78f6l3i4noigcn4isbc5987465rfvt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.aapkelawyer.app.in"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

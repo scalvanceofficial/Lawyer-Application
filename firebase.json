@@ -1,0 +1,52 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "lawyer-417809",
+          "appId": "1:763029742461:android:4798f99311cf15171ce214",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "lawyer-417809",
+          "appId": "1:763029742461:ios:6bed4d74faf3984a1ce214",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "lawyer-417809",
+          "appId": "1:763029742461:ios:6bed4d74faf3984a1ce214",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "lawyer-417809",
+          "configurations": {
+            "android": "1:763029742461:android:4798f99311cf15171ce214",
+            "ios": "1:763029742461:ios:6bed4d74faf3984a1ce214",
+            "macos": "1:763029742461:ios:6bed4d74faf3984a1ce214"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": {
+    "source": "functions"
+  }
+}
