@@ -31,6 +31,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class NotificationService {
   NotificationService._();
 
+  static Future<void> clearForDeletedAccount() async {
+    _pendingTap = null;
+    if (_localInitialized) await _localNotifications.cancelAll();
+  }
+
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();

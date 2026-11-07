@@ -1,18 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/legal_case.dart';
 import 'registration_payment_service.dart';
 
 class CasePaymentService {
-  CasePaymentService({FirebaseFirestore? firestore, FirebaseAuth? auth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _auth = auth ?? FirebaseAuth.instance;
+  CasePaymentService({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+    FirebaseFunctions? functions,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance,
+       _functions =
+           functions ?? FirebaseFunctions.instanceFor(region: 'asia-south1');
 
   static const int platformFee = 149;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+  final FirebaseFunctions _functions;
 
   Future<void> activateCase({
     required LegalCase legalCase,
@@ -67,61 +74,33 @@ class CasePaymentService {
       );
     }
 
-    final caseReference = _firestore.collection('cases').doc(legalCase.id);
-    final paymentReference = _firestore
-        .collection('casePayments')
-        .doc(successfulPayment.paymentId);
-    final timelineReference = _firestore.collection('caseTimeline').doc();
     try {
-      await _firestore.runTransaction((transaction) async {
-        final caseSnapshot = await transaction.get(caseReference);
-        final paymentSnapshot = await transaction.get(paymentReference);
-        if (!caseSnapshot.exists ||
-            caseSnapshot.data()?['clientId'] != user.uid) {
-          throw const CasePaymentException('Case no longer exists.');
-        }
-        final currentCase = LegalCase.fromDocument(caseSnapshot);
-        if (currentCase.isPaidAndActive) return;
-        if (paymentSnapshot.exists) {
-          throw const CasePaymentException(
-            'This payment has already been processed.',
-          );
-        }
-        transaction.set(paymentReference, {
-          'paymentId': successfulPayment.paymentId,
-          'orderId': successfulPayment.orderId,
-          'signature': successfulPayment.signature,
-          'caseId': legalCase.id,
-          'clientId': user.uid,
-          'amount': platformFee,
-          'amountPaise': platformFee * 100,
-          'currency': 'INR',
-          'status': 'success',
-          'paidAt': FieldValue.serverTimestamp(),
-        });
-        transaction.update(caseReference, {
-          'paymentStatus': 'paid',
-          'status': 'active',
-          'isActive': true,
-          'casePaymentId': successfulPayment.paymentId,
-          'activatedAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-        transaction.set(timelineReference, {
-          'caseId': legalCase.id,
-          'clientId': user.uid,
-          'actorId': user.uid,
-          'type': 'payment_successful',
-          'message': '₹$platformFee platform fee paid — case activated',
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      // The server confirms the payment with Razorpay before activating.
+      await _functions.httpsCallable('verifyCasePayment').call({
+        'paymentId': successfulPayment.paymentId,
+        'caseId': legalCase.id,
       });
-    } on CasePaymentException {
-      rethrow;
+    } on FirebaseFunctionsException catch (error) {
+      if (error.code == 'failed-precondition' ||
+          error.code == 'permission-denied' ||
+          error.code == 'not-found') {
+        throw CasePaymentRecoveryException(
+          '${error.message ?? 'This payment could not activate the case.'} '
+          'Contact support with payment ID ${successfulPayment.paymentId}.',
+          paymentId: successfulPayment.paymentId!,
+        );
+      }
+      throw CasePaymentRecoveryException(
+        'Payment succeeded, but activation could not be confirmed. Do not pay '
+        'again. Try again shortly or contact support with payment ID '
+        '${successfulPayment.paymentId}.',
+        paymentId: successfulPayment.paymentId!,
+      );
     } catch (_) {
       throw CasePaymentRecoveryException(
-        'Payment succeeded, but activation could not be saved. Do not pay '
-        'again. Contact support with payment ID ${successfulPayment.paymentId}.',
+        'Payment succeeded, but activation could not be confirmed. Do not pay '
+        'again. Try again shortly or contact support with payment ID '
+        '${successfulPayment.paymentId}.',
         paymentId: successfulPayment.paymentId!,
       );
     }

@@ -3,14 +3,15 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() {
-      return request.auth != null;
+      return request.auth != null
+        && !firestore.exists(/databases/(default)/documents/accountDeletionJobs/$(request.auth.uid));
     }
 
-    match /profile_pictures/{userId}.jpg {
+    match /profile_pictures/{fileName} {
       allow read: if signedIn();
       allow write: if signedIn()
-        && request.auth.uid == userId
-        && request.resource.size < 5 * 1024 * 1024
+        && fileName == request.auth.uid + '.jpg'
+        && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
 
@@ -42,7 +43,7 @@ service firebase.storage {
         && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches(
-          '(image/.*|application/pdf|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document)'
+          '(image/.*|application/pdf|application/octet-stream|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document)'
         );
       allow update, delete: if false;
     }

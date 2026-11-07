@@ -11,3 +11,6 @@ build/
 !.env.example
 *.jks
 *.keystore
+
+# Firebase CLI cache / generated deploy bundles
+.firebase/

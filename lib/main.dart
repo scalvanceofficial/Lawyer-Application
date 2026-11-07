@@ -3,16 +3,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'app.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
 import 'services/apple_purchase_service.dart';
+import 'services/app_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initializeFirebase();
+  if (await AppPreferences.needsCachePurge()) {
+    await FirebaseFirestore.instance.clearPersistence();
+    await AppPreferences.cachePurged();
+  }
   ApplePurchaseService.instance.initialize();
   runApp(const AapkeLawyerApp());
   unawaited(_initializeBackgroundServices());

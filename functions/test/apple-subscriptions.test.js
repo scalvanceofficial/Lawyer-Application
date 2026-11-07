@@ -92,6 +92,11 @@ function harness({ transaction = base, status = 1, productionError, renewal = {}
   }
   class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
   const mocks = {
+    './account-lifecycle': { assertAccountActive: async (uid, tx) => {
+      const ref = db.collection('accountDeletionJobs').doc(uid);
+      const job = tx ? await tx.get(ref) : await ref.get();
+      if (job.exists) throw new HttpsError('failed-precondition', 'Account deletion in progress');
+    } },
     'firebase-functions/v2/https': { onCall: (_options, fn) => fn, onRequest: (_options, fn) => fn, HttpsError },
     'firebase-functions/params': {
       defineSecret: () => ({ value: () => 'test-key' }),

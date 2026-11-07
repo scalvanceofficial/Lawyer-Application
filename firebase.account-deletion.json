@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "source": ".firebase/account-deletion-deploy/functions",
+    "codebase": "default"
+  },
+  "firestore": {
+    "rules": ".firebase/account-deletion-deploy/firestore.rules",
+    "indexes": ".firebase/account-deletion-deploy/firestore.indexes.json"
+  },
+  "storage": {
+    "rules": ".firebase/account-deletion-deploy/storage.rules"
+  }
+}

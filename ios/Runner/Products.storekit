@@ -1,0 +1,91 @@
+{
+  "identifier" : "A1F0C3D2",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "5YAFFD79HH",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_IN",
+    "_storefront" : "IND",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21000001",
+      "localizations" : [
+
+      ],
+      "name" : "NyaySaarthi Access",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "149",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "31000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "AI Chat Bot, AI Court and legal resources for 1 month",
+              "displayName" : "1 Month Plan",
+              "locale" : "en_IN"
+            }
+          ],
+          "productID" : "com.aapkelawyer.app.sub.1month",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "1 Month Plan",
+          "subscriptionGroupID" : "21000001",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "499",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "31000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "AI Chat Bot, AI Court and legal resources for 3 months",
+              "displayName" : "3 Months Plan",
+              "locale" : "en_IN"
+            }
+          ],
+          "productID" : "com.aapkelawyer.app.sub.3months",
+          "recurringSubscriptionPeriod" : "P3M",
+          "referenceName" : "3 Months Plan",
+          "subscriptionGroupID" : "21000001",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

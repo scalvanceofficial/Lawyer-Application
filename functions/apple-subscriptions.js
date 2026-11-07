@@ -9,6 +9,7 @@ const {
   AppStoreServerAPIClient, SignedDataVerifier, Environment,
 } = require('@apple/app-store-server-library');
 const { entitlementFor, summarize } = require('./apple-subscription-state');
+const { assertAccountActive } = require('./account-lifecycle');
 
 const privateKey = defineSecret('APPLE_IAP_PRIVATE_KEY');
 const keyId = defineString('APPLE_IAP_KEY_ID');
@@ -39,6 +40,7 @@ exports.prepareApplePurchase = onCall({ region: 'asia-south1' }, async (request)
   const db = getFirestore();
   const ref = db.collection('applePurchaseAccounts').doc(uid);
   return db.runTransaction(async (tx) => {
+    await assertAccountActive(uid, tx);
     const account = await tx.get(ref);
     if (account.exists) return { appAccountToken: account.data().appAccountToken };
     const appAccountToken = randomUUID();
@@ -55,6 +57,7 @@ async function configuredProducts() {
 }
 
 async function syncSubscription(uid, transactionId, environment) {
+  await assertAccountActive(uid);
   const db = getFirestore();
   const account = await db.collection('applePurchaseAccounts').doc(uid).get();
   if (!account.exists) throw new HttpsError('failed-precondition', 'Prepare your purchase first.');
@@ -96,6 +99,7 @@ async function syncSubscription(uid, transactionId, environment) {
   if (!Object.keys(updates).length) throw new Error('No matching subscription status returned');
   const ref = db.collection('appleSubscriptions').doc(uid);
   return db.runTransaction(async (tx) => {
+    await assertAccountActive(uid, tx);
     const existing = await tx.get(ref);
     const chains = { ...(existing.data()?.chains || {}) };
     for (const [id, update] of Object.entries(updates)) {
@@ -179,6 +183,8 @@ exports.appleSubscriptionNotifications = onRequest({ ...options, invoker: 'publi
       logger.warn('Apple notification has no mapped app account');
       return res.sendStatus(200);
     }
+    const deletion = await getFirestore().collection('accountDeletionJobs').doc(owner.data().uid).get();
+    if (deletion.exists) return res.sendStatus(200);
     // Fetch current state instead of applying events in their delivery order.
     await syncSubscription(owner.data().uid, transaction.transactionId, environment);
     return res.sendStatus(200);

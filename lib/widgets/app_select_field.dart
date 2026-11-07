@@ -119,7 +119,7 @@ class AppSelectField<T> extends FormField<T> {
                child: selected == null
                    ? const SizedBox(height: 18)
                    : displayChild ??
-                         Text(
+                         Text(7
                            displayText ?? itemLabel(selected),
                            maxLines: 1,
                            overflow: TextOverflow.ellipsis,

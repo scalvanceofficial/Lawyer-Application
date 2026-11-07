@@ -6,6 +6,35 @@ class AppPreferences {
   static const _onboardingCompleteKey = 'onboarding_complete';
   static const _currentUserIdKey = 'current_user_id';
   static const _userTypeKey = 'userType';
+  static const _purgeCacheKey = 'purge_firestore_after_deletion';
+
+  static Future<void> markDeletionRequested(String uid) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool('deletion_requested_$uid', true);
+  }
+
+  static Future<bool> deletionRequested(String uid) async =>
+      (await SharedPreferences.getInstance()).getBool(
+        'deletion_requested_$uid',
+      ) ??
+      false;
+
+  static Future<void> forgetUser(String uid) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_purgeCacheKey, true);
+    await preferences.remove('user_role_$uid');
+    await preferences.remove('deletion_requested_$uid');
+    if (preferences.getString(_currentUserIdKey) == uid) {
+      await preferences.remove(_currentUserIdKey);
+      await preferences.remove(_userTypeKey);
+    }
+  }
+
+  static Future<bool> needsCachePurge() async =>
+      (await SharedPreferences.getInstance()).getBool(_purgeCacheKey) ?? false;
+
+  static Future<void> cachePurged() async =>
+      (await SharedPreferences.getInstance()).remove(_purgeCacheKey);
 
   static Future<bool> isOnboardingComplete() async {
     final preferences = await SharedPreferences.getInstance();

@@ -3,7 +3,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
-      return request.auth != null;
+      return request.auth != null
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(request.auth.uid));
+    }
+
+    match /accountDeletionJobs/{userId} {
+      // The user can watch completion even after ordinary account access stops.
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
     }
 
     function supportAdmin() {
@@ -27,6 +34,8 @@ service cloud.firestore {
 
     function acceptedRequest(id) {
       return signedIn()
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(get(/databases/$(database)/documents/consultationRequests/$(id)).data.clientId))
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(get(/databases/$(database)/documents/consultationRequests/$(id)).data.lawyerId))
         && get(/databases/$(database)/documents/consultationRequests/$(id)).data.status
           == 'accepted'
         && request.auth.uid in [
@@ -83,9 +92,15 @@ service cloud.firestore {
         && request.resource.data.fee is number
         && request.resource.data.fee >= 0;
       allow read: if signedIn();
-      allow update, delete: if signedIn() && request.auth.uid == userId
+      allow update: if signedIn() && request.auth.uid == userId
         && request.resource.data.email == resource.data.email
-        && request.resource.data.phone == resource.data.phone;
+        && request.resource.data.phone == resource.data.phone
+        // Verification, trial start and ratings are set only by admins/servers.
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'verified', 'date', 'createdAt', 'uid', 'role',
+          'rating', 'ratingSum', 'reviewCount', 'ratingUpdatedAt'
+        ]);
+      allow delete: if signedIn() && request.auth.uid == userId;
     }
 
     match /areaofexpertise/{documentId} {
@@ -108,35 +123,18 @@ service cloud.firestore {
         && resource.data.clientId == request.auth.uid
         && request.resource.data.clientId == resource.data.clientId
         && request.resource.data.caseId == resource.data.caseId
-        && (
-          (
-            resource.data.paymentStatus == request.resource.data.paymentStatus
-            && resource.data.isActive == request.resource.data.isActive
-          )
-          ||
-          (
-            resource.data.paymentStatus == 'pending'
-            && request.resource.data.paymentStatus == 'paid'
-            && request.resource.data.isActive == true
-            && request.resource.data.status == 'active'
-            && request.resource.data.casePaymentId is string
-            && existsAfter(/databases/$(database)/documents/casePayments/$(request.resource.data.casePaymentId))
-          )
-        );
+        // Only verifyCasePayment (server) may mark a case paid/active.
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'paymentStatus', 'isActive', 'casePaymentId', 'activatedAt'
+        ]);
       allow delete: if signedIn()
         && resource.data.clientId == request.auth.uid
         && resource.data.isActive == false;
     }
 
     match /casePayments/{paymentId} {
-      allow create: if signedIn()
-        && request.resource.data.paymentId == paymentId
-        && request.resource.data.clientId == request.auth.uid
-        && request.resource.data.amount == 149
-        && request.resource.data.amountPaise == 14900
-        && request.resource.data.currency == 'INR'
-        && request.resource.data.status == 'success'
-        && ownsCase(request.resource.data.caseId);
+      // Created only by verifyCasePayment after Razorpay confirms the payment.
+      allow create: if false;
       allow read: if signedIn()
         && resource.data.clientId == request.auth.uid;
       allow update, delete: if false;
@@ -155,6 +153,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/cases/$(request.resource.data.caseId)).data.status
           != 'completed'
         && exists(/databases/$(database)/documents/lawyers/$(request.resource.data.lawyerId))
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(request.resource.data.lawyerId))
         && request.resource.data.status == 'pending';
       allow read: if signedIn()
         && request.auth.uid in [resource.data.clientId, resource.data.lawyerId];
@@ -183,6 +182,7 @@ service cloud.firestore {
 
     match /lawyerReviews/{reviewId} {
       allow create: if signedIn()
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(request.resource.data.lawyerId))
         && request.resource.data.reviewId == reviewId
         && request.resource.data.requestId == reviewId
         && request.resource.data.clientId == request.auth.uid
@@ -270,7 +270,8 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow create: if signedIn()
         && request.resource.data.senderId == request.auth.uid
-        && request.resource.data.recipientId != request.auth.uid;
+        && request.resource.data.recipientId != request.auth.uid
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(request.resource.data.recipientId));
       allow read: if signedIn()
         && resource.data.recipientId == request.auth.uid;
       allow update: if signedIn()
@@ -328,6 +329,7 @@ service cloud.firestore {
       allow create, update: if signedIn()
         && request.auth.uid == clientUid
         && request.resource.data.keys().hasOnly(['lawyerId', 'savedAt'])
+        && !exists(/databases/$(database)/documents/accountDeletionJobs/$(lawyerUid))
         && request.resource.data.lawyerId == lawyerUid
         && request.resource.data.savedAt == request.time;
     }

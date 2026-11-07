@@ -1,3 +1,4 @@
+import 'account_deletion_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../services/app_preferences.dart';
@@ -61,6 +62,9 @@ class _SplashScreenState extends State<SplashScreen>
     Widget destination;
     if (!onboardingComplete && AuthService.currentUser == null) {
       destination = const OnboardingScreen();
+    } else if (AuthService.currentUser != null &&
+        await AppPreferences.deletionRequested(AuthService.currentUser!.uid)) {
+      destination = const AccountDeletionScreen();
     } else if (AuthService.currentUser != null) {
       try {
         final role = await AuthService.currentUserRole();

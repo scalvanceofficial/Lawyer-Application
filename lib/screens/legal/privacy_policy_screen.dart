@@ -29,6 +29,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
         LegalSection('5. Data Security', [
           'We use appropriate safeguards, including industry-standard security measures, to help prevent unauthorized access, disclosure, alteration, or destruction of personal information.',
         ]),
+        LegalSection('Account Deletion', [
+          'You can permanently delete your account from My profile or the navigation menu by choosing Delete account. Confirm your current password and type DELETE. Deletion removes your Firebase sign-in account and associated app data, including your profile, owned cases and uploaded files, consultation chats, reviews, saved advocates, and support history.',
+          'Cases independently owned by other clients remain. Your consultation and related personal details are removed. Processing continues on our servers if you close the app, and failed cleanup attempts retry automatically. A minimal deletion-status record is kept temporarily to complete processing and prevent duplicate work.',
+          'Account deletion does not cancel an Apple subscription or request a refund. Manage subscriptions through your Apple account settings. Files you exported or shared outside the app and records held independently by payment providers are not erased by deleting your app account.',
+        ]),
         LegalSection('6. Changes to This Policy', [
           'We may modify this Privacy Policy at any time. Material changes may be announced on the platform or by email. Continued use after a change constitutes acceptance of the revised policy.',
         ]),

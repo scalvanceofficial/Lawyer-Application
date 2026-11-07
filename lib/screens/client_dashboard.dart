@@ -32,6 +32,7 @@ import 'legal_chat_screen.dart';
 import 'notifications_screen.dart';
 import 'subscription_screen.dart';
 import 'welcome_screen.dart';
+import 'account_deletion_screen.dart';
 
 final ButtonStyle _dashboardSectionButtonStyle = FilledButton.styleFrom(
   backgroundColor: Primary,
@@ -1462,6 +1463,7 @@ class ClientProfilePage extends StatelessWidget {
             icon: const Icon(Icons.edit_outlined),
             label: const Text('Edit profile'),
           ),
+          const DeleteAccountButton(),
         ],
       );
     },
@@ -1745,6 +1747,7 @@ class _ClientDrawer extends StatelessWidget {
             ),
           ),
           const Divider(color: Colors.white24),
+          const DeleteAccountButton(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),

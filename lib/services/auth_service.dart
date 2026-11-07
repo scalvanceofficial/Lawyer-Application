@@ -23,6 +23,11 @@ class AuthService {
     if (user == null) return null;
 
     try {
+      final deletion = await _firestore
+          .collection('accountDeletionJobs')
+          .doc(user.uid)
+          .get();
+      if (deletion.exists) return null;
       UserRole? role;
       final userDocument = await _findProfileDocument(UserRole.client);
       if (userDocument != null) {

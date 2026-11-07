@@ -1,6 +1,7 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const { getFirestore, Timestamp, FieldValue } = require('firebase-admin/firestore');
+const { assertAccountActive } = require('./account-lifecycle');
 
 const keyId = defineSecret('RAZORPAY_KEY_ID');
 const keySecret = defineSecret('RAZORPAY_KEY_SECRET');
@@ -20,6 +21,7 @@ exports.verifyRazorpaySubscription = onCall({
 }, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Please sign in.');
   const uid = request.auth.uid;
+  await assertAccountActive(uid);
   const { paymentId, planDocumentId, role } = request.data || {};
   if (typeof paymentId !== 'string' || !/^pay_[a-zA-Z0-9]+$/.test(paymentId) ||
       typeof planDocumentId !== 'string' || !planDocumentId || planDocumentId.includes('/') ||
@@ -48,6 +50,7 @@ exports.verifyRazorpaySubscription = onCall({
     throw new HttpsError('failed-precondition', 'This payment cannot activate this subscription.');
   }
   return db.runTransaction(async (tx) => {
+    await assertAccountActive(uid, tx);
     const usedRef = db.collection('verifiedSubscriptionPayments').doc(paymentId);
     const ref = db.collection('subscriptions').doc(uid);
     const [used, existing, lawyer] = await Promise.all([

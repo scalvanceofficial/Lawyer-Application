@@ -25,6 +25,7 @@ import 'notifications_screen.dart';
 import 'cases/lawyer_case_requests_screen.dart';
 import 'subscription_screen.dart';
 import 'welcome_screen.dart';
+import 'account_deletion_screen.dart';
 
 const _ink = kInk;
 
@@ -287,6 +288,7 @@ class _LawyerDrawer extends StatelessWidget {
           _drawerItem(Icons.help_outline, 'Help & Support', 6),
           _drawerItem(Icons.info_outline, 'About', 7),
           const Divider(color: Colors.white24),
+          const DeleteAccountButton(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
@@ -1160,6 +1162,7 @@ class _LawyerProfile extends StatelessWidget {
                 builder: (_) => _EditLawyerProfileDialog(profile: liveProfile),
               ),
             ),
+            const DeleteAccountButton(),
           ],
         ),
       );
@@ -1562,6 +1565,7 @@ class _ClientProfile extends StatelessWidget {
           icon: Icons.edit_outlined,
           onTap: () {},
         ),
+        const DeleteAccountButton(),
       ],
     ),
   );

@@ -11,6 +11,7 @@ class LawyerDirectoryService {
     ) {
       final lawyers =
           snapshot.docs
+              .where((doc) => doc.data()['accountDeleting'] != true)
               .map(LawyerDirectoryProfile.fromDocument)
               .where((lawyer) => lawyer.name.isNotEmpty)
               .toList()

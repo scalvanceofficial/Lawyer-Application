@@ -7,6 +7,9 @@ initializeApp();
 
 Object.assign(exports, require('./apple-subscriptions'));
 Object.assign(exports, require('./razorpay-subscriptions'));
+Object.assign(exports, require('./case-payments'));
+Object.assign(exports, require('./account-deletion'));
+const { setActiveNotification, assertAccountActive } = require('./account-lifecycle');
 
 exports.sendCaseNotification = onDocumentCreated(
   {
@@ -22,6 +25,9 @@ exports.sendCaseNotification = onDocumentCreated(
     if (!recipientId) return;
 
     const db = getFirestore();
+    const current = await snapshot.ref.get();
+    if (!current.exists) return;
+    try { await assertAccountActive(recipientId); } catch (_) { return; }
     let profile = await db.collection("users").doc(recipientId).get();
     if (!profile.exists) {
       profile = await db.collection("lawyers").doc(recipientId).get();
@@ -96,7 +102,7 @@ exports.notifyOnChatMessage = onDocumentCreated(
       ? String(data.clientName || "Client")
       : String(data.lawyerName || "Lawyer");
     const text = String(message.message || "New message").trim();
-    await db.collection("notifications").doc(`chat_${event.params.messageId}`).set({
+    await setActiveNotification(db.collection("notifications").doc(`chat_${event.params.messageId}`), {
       recipientId: message.receiverId,
       senderId: message.senderId,
       caseId: String(data.caseId || ""),
@@ -106,7 +112,7 @@ exports.notifyOnChatMessage = onDocumentCreated(
       type: "chat_message",
       isRead: false,
       createdAt: FieldValue.serverTimestamp(),
-    }, { merge: false });
+    });
   },
 );
 
@@ -123,13 +129,12 @@ exports.notifyLawyersOnCasePayment = onDocumentCreated(
     const requests = await db.collection("consultationRequests")
       .where("caseId", "==", payment.caseId)
       .get();
-    const batch = db.batch();
     for (const request of requests.docs) {
       const data = request.data();
       if (data.status !== "accepted" || !data.lawyerId) continue;
       const notification = db.collection("notifications")
         .doc(`paid_${event.params.paymentId}_${data.lawyerId}`);
-      batch.set(notification, {
+      await setActiveNotification(notification, {
         recipientId: data.lawyerId,
         senderId: payment.clientId,
         caseId: payment.caseId,
@@ -141,7 +146,6 @@ exports.notifyLawyersOnCasePayment = onDocumentCreated(
         createdAt: FieldValue.serverTimestamp(),
       });
     }
-    await batch.commit();
   },
 );
 
@@ -167,7 +171,7 @@ exports.updateLawyerRating = onDocumentCreated(
         transaction.get(reviewRef),
         transaction.get(lawyerRef),
       ]);
-      if (!freshReview.exists || freshReview.data().aggregatedAt) return;
+      if (!freshReview.exists || !lawyer.exists || freshReview.data().aggregatedAt) return;
       const rating = Number(freshReview.data().rating);
       if (!Number.isFinite(rating) || rating < 1 || rating > 5) return;
       const oldCount = Number(lawyer.data()?.reviewCount || 0);
@@ -200,7 +204,7 @@ exports.notifyOnSupportReply = onDocumentCreated(
     const ticket = await db.collection("support_tickets").doc(message.ticketId).get();
     const recipientId = ticket.data()?.userId;
     if (!recipientId) return;
-    await db.collection("notifications").doc(`support_${event.params.messageId}`).set({
+    await setActiveNotification(db.collection("notifications").doc(`support_${event.params.messageId}`), {
       recipientId,
       senderId: "support",
       ticketId: message.ticketId,
@@ -230,8 +234,8 @@ exports.notifyOnTicketStatusChange = onDocumentUpdated(
       closed: "has been closed",
       open: "has been reopened",
     };
-    await getFirestore().collection("notifications")
-      .doc(`ticket_status_${event.params.ticketId}_${after.status}`).set({
+    await setActiveNotification(getFirestore().collection("notifications")
+      .doc(`ticket_status_${event.params.ticketId}_${after.status}`), {
         recipientId: after.userId,
         senderId: "support",
         ticketId: event.params.ticketId,
